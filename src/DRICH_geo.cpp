@@ -350,14 +350,15 @@ static Ref_t createDetector(Detector& desc, xml::Handle_t handle, SensitiveDetec
   // quartz window solids thickness reduced by factor 50
   // nSectors
   for (int isec = 0; isec < nSectors; isec++) {
-    Tube quartzTube(quartzwinRmin, quartzwinRmax, (quartzwinLength / 2.)/50, -quartzwinDphi / 2.,
+    Tube quartzTube(quartzwinRmin, quartzwinRmax, (quartzwinLength / 2.)/100, -quartzwinDphi / 2.,
     quartzwinDphi / 2.);
     std::string secName = "sec" + std::to_string(isec);
     RotationZ sectorRotation((isec + 0.5) * 2 * M_PI / nSectors);
     Volume quartzVol(detName + "_quartzwin_"+secName, quartzTube, quartzWindowMat);//"_quartz_" + secName
     quartzVol.setSensitiveDetector(sens);
     quartzVol.setVisAttributes(aerogelVis);
-    double quartzZPos = -(snoutLength + sensorboxLength) / 2.0 + windowThickness + quartzwinLength / 2.0 + sensorboxLength/2;
+    // double quartzZPos = -(snoutLength + sensorboxLength) / 2.0 + windowThickness + quartzwinLength / 2.0;
+    double quartzZPos = -(snoutLength + sensorboxLength) + windowThickness + quartzwinLength;
     auto quartzPlacement = Translation3D(0., 0., quartzZPos) * // re-center to originFront
                             RotationZ((isec + 0.5) * 2 * M_PI / nSectors);    // change polar angle to specified pitch
     
