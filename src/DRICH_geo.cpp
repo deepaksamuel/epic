@@ -22,7 +22,6 @@
 
 using namespace dd4hep;
 using namespace dd4hep::rec;
-
 // create the detector
 static Ref_t createDetector(Detector& desc, xml::Handle_t handle, SensitiveDetector sens) {
 
@@ -50,7 +49,6 @@ static Ref_t createDetector(Detector& desc, xml::Handle_t handle, SensitiveDetec
   auto windowThickness = dims.attr<double>(_Unicode(window_thickness));
   auto vesselMat       = desc.material(detElem.attr<std::string>(_Unicode(material)));
   auto gasvolMat       = desc.material(detElem.attr<std::string>(_Unicode(gas)));
-  auto quartzWindowMat = desc.material(detElem.attr<std::string>(_Unicode(quartzmat))); // added by DS
   auto vesselVis       = desc.visAttributes(detElem.attr<std::string>(_Unicode(vis_vessel)));
   auto gasvolVis       = desc.visAttributes(detElem.attr<std::string>(_Unicode(vis_gas)));
 
@@ -94,10 +92,28 @@ static Ref_t createDetector(Detector& desc, xml::Handle_t handle, SensitiveDetec
   auto sensorboxDphi   = desc.constant<double>("DRICH_sensorbox_dphi");
 
   // -quartz window added by DS, same shape as sensor box but smaller in length and different material and displaced
-  auto quartzwinLength = desc.constant<double>("DRICH_sensorbox_length");
-  auto quartzwinRmin   = desc.constant<double>("DRICH_sensorbox_rmin");
-  auto quartzwinRmax   = desc.constant<double>("DRICH_sensorbox_rmax");
-  auto quartzwinDphi   = desc.constant<double>("DRICH_sensorbox_dphi");
+  auto quartzElem         = detElem.child(_Unicode(quartzwindow));
+  auto quartzwinThickness = quartzElem.attr<double>("thickness");
+  auto quartzwinRmin      = quartzElem.attr<double>("rmin");
+  auto quartzwinRmax      = quartzElem.attr<double>("rmax");
+  auto quartzwinZmin      = quartzElem.attr<double>("zmin");
+  auto quartzwinZmax      = quartzElem.attr<double>("zmax");
+  auto quartzwinDphi      = quartzElem.attr<double>("phiw");
+  auto quartzwinShift     = quartzElem.attr<double>("shift");
+  auto quartzwinMat       = desc.material(quartzElem.attr<std::string>(_Unicode(material)));
+  auto quartzwinVis       = desc.visAttributes(quartzElem.attr<std::string>(_Unicode(vis)));
+
+  std::cout<<"=== Quartz Window ==="<<std::endl;
+  std::cout<<"Thickness: "<<quartzwinThickness<<std::endl;
+  std::cout<<"Rmin: "<<quartzwinRmin<<std::endl;
+  std::cout<<"Rmax: "<<quartzwinRmax<<std::endl;
+  std::cout<<"Zmin: "<<quartzwinZmin<<std::endl;
+  std::cout<<"Zmax: "<<quartzwinZmax<<std::endl;
+  std::cout<<"Dphi: "<<quartzwinDphi<<std::endl;
+  std::cout<<"Shift: "<<quartzwinShift<<std::endl;
+  std::cout<<"Material: "<<quartzwinMat->GetName()<<std::endl;
+  std::cout<<std::endl;
+  
   // - sensor photosensitive surface (pss)
   auto pssElem      = detElem.child(_Unicode(sensors)).child(_Unicode(pss));
   auto pssMat       = desc.material(pssElem.attr<std::string>(_Unicode(material)));
@@ -134,7 +150,7 @@ static Ref_t createDetector(Detector& desc, xml::Handle_t handle, SensitiveDetec
   bool debugSector     = desc.constant<int>("DRICH_debug_sector") == 1;
   bool debugMirror     = desc.constant<int>("DRICH_debug_mirror") == 1;
   bool debugSensors    = desc.constant<int>("DRICH_debug_sensors") == 1;
-
+  
   // if debugging optics, override some settings
   bool debugOptics = debugOpticsMode > 0;
   if (debugOptics) {
@@ -258,8 +274,6 @@ static Ref_t createDetector(Detector& desc, xml::Handle_t handle, SensitiveDetec
                     Position(0., 0., -(snoutLength + sensorboxLength) / 2. + windowThickness)));
   }
 
-  // build quartz window and place in front of sensor box, parallel to its face
-
   //  extra solids for `debugOptics` only
   Box vesselBox(1001, 1001, 1001);
   Box gasvolBox(1000, 1000, 1000);
@@ -299,6 +313,8 @@ static Ref_t createDetector(Detector& desc, xml::Handle_t handle, SensitiveDetec
   // auto originBack  = Position(0., 0., tankLength / 2.0);
   auto vesselPos = Position(0, 0, vesselZmin) - originFront;
 
+  std::cout<<"OriginFront: "<<originFront<<std::endl;
+  std::cout<<"vesselPos: "<<vesselPos<<std::endl;
   // place gas volume
   PlacedVolume gasvolPV = vesselVol.placeVolume(gasvolVol, Position(0, 0, 0));
   DetElement gasvolDE(det, "gasvol_de", 0);
@@ -335,55 +351,58 @@ static Ref_t createDetector(Detector& desc, xml::Handle_t handle, SensitiveDetec
   aerogelVol.setVisAttributes(aerogelVis);
   airgapVol.setVisAttributes(airgapVis);
   filterVol.setVisAttributes(filterVis);
-
-
-  // // quartz placement 
-  // Box quartzSolid(pssSide * 100, pssSide*100, pssThickness*100);
-  // Volume quartzVol(detName + "_quartz_", quartzSolid, pssMat);//"_quartz_" + secName
-  // quartzVol.setVisAttributes(aerogelVis);
-  // auto quartzPlacement = Translation3D(0., 0., 0.) * // re-center to originFront
-  //                         RotationY(0);    // change polar angle to specified pitch
-  // auto quartzPV = gasvolVol.placeVolume(quartzVol, quartzPlacement);
-  // DetElement quartzDE(det, "quartz_de", 0);
-  // quartzDE.setPlacement(quartzPV);
     
-  // quartz window solids thickness reduced by factor 50
-  // nSectors
+
+
+  // quartz window placement
+  float qw_slope    =  (quartzwinRmax - quartzwinRmin)/(quartzwinZmax-quartzwinZmin);
+  float qw_intercpt =   quartzwinRmax - qw_slope*quartzwinZmax;
+  double qw_angle    =   (atan(qw_slope)-(M_PI/2));
+  double qw_zpos     = -((qw_intercpt/qw_slope) + vesselPos.z()) + quartzwinThickness/2 + quartzwinShift;
+  // rmax should be increased so that the top edge matches at the right point (2545,1790)
+  float quartzwinRmax2 = (quartzwinRmax) / cos(qw_angle);
+  float quartzwinRmin2 = (quartzwinRmax2-quartzwinRmax)+(quartzwinRmin);
+  RotationY tiltRotation(qw_angle);
+  
+
+  std::cout<<"Quartz Window Rmin: "<<quartzwinRmin<<std::endl;
+  std::cout<<"Quartz Window Rmax: "<<quartzwinRmax<<std::endl;
+  std::cout<<"Quartz Window Rmin2: "<<quartzwinRmin2<<std::endl;
+  std::cout<<"Quartz Window Rmax2: "<<quartzwinRmax2<<std::endl;
+  std::cout<<"Quartz Window Zpos: "<<qw_zpos<<std::endl;
+  std::cout<<"Quartz Window Angle: "<<qw_angle<<std::endl;
+  std::cout<<"Quartz Window Slope: "<<qw_slope<<std::endl;
+  std::cout<<"Quartz Window Intercept: "<<qw_intercpt<<std::endl;
+  std::cout<<"Vessel Zpos "<<vesselPos.z()<<std::endl;
+ 
   for (int isec = 0; isec < nSectors; isec++) {
-    Tube quartzTube(quartzwinRmin, quartzwinRmax, (quartzwinLength / 2.)/100, -quartzwinDphi / 2.,
+    Tube quartzTube(quartzwinRmin2, quartzwinRmax2, (quartzwinThickness/2.), 
+    -quartzwinDphi / 2.,
     quartzwinDphi / 2.);
+
     std::string secName = "sec" + std::to_string(isec);
-    RotationZ sectorRotation((isec + 0.5) * 2 * M_PI / nSectors);
-    Volume quartzVol(detName + "_quartzwin_"+secName, quartzTube, quartzWindowMat);//"_quartz_" + secName
+    Volume quartzVol(detName + "_quartzwin_"+secName, quartzTube, quartzwinMat);//"_quartz_" + secName
     quartzVol.setSensitiveDetector(sens);
-    quartzVol.setVisAttributes(aerogelVis);
-    // double quartzZPos = -(snoutLength + sensorboxLength) / 2.0 + windowThickness + quartzwinLength / 2.0;
-    double quartzZPos = -(snoutLength + sensorboxLength) + windowThickness + quartzwinLength;
-    auto quartzPlacement = Translation3D(0., 0., quartzZPos) * // re-center to originFront
-                            RotationZ((isec + 0.5) * 2 * M_PI / nSectors);    // change polar angle to specified pitch
+    quartzVol.setVisAttributes(quartzwinVis);
+    // positioning:
+    // the origin is currently at (0,0,2680 mm), given by vesselPos
+    // First: each quartz window is rotated about the z axis by the same amount as the sensor box
+    // Second: Each quartz window is placed such that it is tangential to the central part of the sensor
+    // this requires a rotation about the y axis
+    // Note that all rotations are about the origin and therefore the quartz window has to be shifted back by a suitable amount
+    // It also requires a shifting along y and z due to the rotation
+
+    RotationZ sectorRotation((isec + 0.5) * 2 * M_PI / nSectors); // apply same rotation as sensorbox
     
-    std::cout<<detName + "_quartzwin_"+secName<<"\t"<<quartzPlacement<<std::endl;
+    auto quartzPlacement = Translation3D(0., 0, qw_zpos)* RotationZ((isec + 0.5) * 2 * M_PI / nSectors)*tiltRotation ; //*tiltRotation// re-center to originFront
+    
     auto quartzPV = gasvolVol.placeVolume(quartzVol, quartzPlacement);
     quartzPV.addPhysVolID("sector", isec)
     .addPhysVolID("pdu", 999).addPhysVolID("sipm",999); // Unique identifier for quartz window
+    
     auto sensorID = encodeSensorID(quartzPV.volIDs());
     DetElement quartzDE(det, "quartz_de"+secName, sensorID);
     quartzDE.setPlacement(quartzPV);  
-
-
-
-
-
-    // pssPV.addPhysVolID("sector", isec)
-    // .addPhysVolID("pdu", ipdu)
-    // .addPhysVolID("sipm", isipm);
-
-    // sensor DetElement
-    
-    // std::string sensorIDname =
-    //     secName + "_pdu" + std::to_string(ipdu) + "_sipm" + std::to_string(isipm);
-    // DetElement pssDE(det, "sensor_de_" + sensorIDname, sensorID);
-    // pssDE.setPlacement(pssPV);    
   }
 
 
