@@ -4,6 +4,8 @@ Overview
 --------
 # Forked repository to introduce quartz window for dRICH
 
+
+
 <a href="https://eic.github.io/epic/artifacts/epic_craterlake_views/view1_top.pdf"><img align="right" alt="craterlake" src="https://eic.github.io/epic/artifacts/epic_craterlake_views/view1_top.png" width="70%"/></a>
 
 **Detector geometry:**
