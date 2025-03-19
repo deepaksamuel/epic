@@ -26,7 +26,8 @@
 <constant name="DRICH_sensorbox_rmax"     value="DRICH_rmax2 + 5*cm"/>  <!-- upper radial limit of the extrusion -->
 <constant name="DRICH_sensorbox_dphi"     value="42*degree"/>  <!-- azimuthal width of the extrusion -->
 <!-- sensor boxes quartz window: isolates the sensors at low temperature from the gas region-->
-<constant name="DRICH_quartzwindow_thickness"   value="0.05*cm"/>  <!-- thickness of quartz window -->
+<constant name="DRICH_quartzwindow_thickness"   value="5*mm"/>  <!-- thickness of quartz window -->
+
 <constant name="DRICH_quartzwindow_rmin"     value="1042*mm"/>  <!-- lower radial limit of quartz window -->
 <constant name="DRICH_quartzwindow_rmax"     value="1790*mm"/>  <!-- upper radial limit of quartz window -->
 <constant name="DRICH_quartzwindow_zmin"     value="2259*mm"/>  <!-- z-position at lower radial limit of quartz window -->
@@ -60,7 +61,8 @@
 - `DRICH_debug_sensors`:   1 = draw full sensor sphere for a single sector; 0 = off
 </comment>
 <constant name="DRICH_debug_optics"    value="0"/>
-<constant name="DRICH_debug_sector"    value="0"/>
+<constant name="DRICH_debug_sector"    value="1"/>
+
 <constant name="DRICH_debug_mirror"    value="0"/>
 <constant name="DRICH_debug_sensors"   value="0"/>
 </define>

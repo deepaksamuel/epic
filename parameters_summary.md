@@ -183,7 +183,7 @@ Materials: The vessel is made of aluminum, the radiator uses aerogel and acrylic
 
 | Constant Name                      | Value            | Description                                      |
 |------------------------------------|------------------|--------------------------------------------------|
-| DRICH_quartzwindow_thickness       | 0.05*cm          | Thickness of quartz window                       |
+| DRICH_quartzwindow_thickness       | 5*mm          | Thickness of quartz window                       |
 | DRICH_quartzwindow_rmin            | 1042*mm          | Lower radial limit of quartz window              |
 | DRICH_quartzwindow_rmax            | 1790*mm          | Upper radial limit of quartz window              |
 | DRICH_quartzwindow_zmin            | 2259*mm          | Z-position at lower radial limit of quartz window |
