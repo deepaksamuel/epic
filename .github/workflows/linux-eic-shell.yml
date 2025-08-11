@@ -113,7 +113,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: build
     steps:
-    - uses: actions/download-artifact@v4
+    - uses: actions/download-artifact@v5
       with:
         name: build-gcc-full-eic-shell
         path: install/
@@ -143,7 +143,7 @@ jobs:
       - check-tracking-geometry
     steps:
     - uses: actions/checkout@v4
-    - uses: actions/download-artifact@v4
+    - uses: actions/download-artifact@v5
       with:
         name: build-gcc-full-eic-shell
         path: install/
@@ -199,7 +199,7 @@ jobs:
         detector_config: [epic_craterlake]
     steps:
     - uses: actions/checkout@v4
-    - uses: actions/download-artifact@v4
+    - uses: actions/download-artifact@v5
       with:
         name: build-gcc-full-eic-shell
         path: install/
@@ -226,7 +226,7 @@ jobs:
         detector_config: [epic_craterlake]
     steps:
     - uses: actions/checkout@v4
-    - uses: actions/download-artifact@v4
+    - uses: actions/download-artifact@v5
       with:
         name: build-gcc-full-eic-shell
         path: install/
@@ -294,7 +294,7 @@ jobs:
       fail-fast: false
     steps:
     - uses: actions/checkout@v4
-    - uses: actions/download-artifact@v4
+    - uses: actions/download-artifact@v5
       with:
         name: build-gcc-full-eic-shell
         path: install/
@@ -316,7 +316,7 @@ jobs:
     if: github.ref == 'refs/heads/main'
     steps:
     - uses: actions/checkout@v4
-    - uses: actions/download-artifact@v4
+    - uses: actions/download-artifact@v5
       with:
         name: build-gcc-full-eic-shell
         path: install/
@@ -347,7 +347,7 @@ jobs:
       fail-fast: false
     steps:
     - uses: actions/checkout@v4
-    - uses: actions/download-artifact@v4
+    - uses: actions/download-artifact@v5
       with:
         name: build-gcc-full-eic-shell
         path: install/
@@ -372,7 +372,7 @@ jobs:
       fail-fast: false
     steps:
     - uses: actions/checkout@v4
-    - uses: actions/download-artifact@v4
+    - uses: actions/download-artifact@v5
       with:
         name: build-gcc-fast-eic-shell
         path: install/
@@ -431,7 +431,7 @@ jobs:
       fail-fast: false
     steps:
     - uses: actions/checkout@v4
-    - uses: actions/download-artifact@v4
+    - uses: actions/download-artifact@v5
       with:
         name: build-gcc-fast-eic-shell
         path: install/
@@ -460,7 +460,7 @@ jobs:
       fail-fast: false
     steps:
     - uses: actions/checkout@v4
-    - uses: actions/download-artifact@v4
+    - uses: actions/download-artifact@v5
       with:
         name: ${{ matrix.detector_config }}.prim
         path: prim/
@@ -490,7 +490,7 @@ jobs:
       fail-fast: false
     steps:
     - uses: actions/checkout@v4
-    - uses: actions/download-artifact@v4
+    - uses: actions/download-artifact@v5
       with:
         name: ${{ matrix.detector_config }}.prim
         path: prim/
@@ -534,7 +534,7 @@ jobs:
         detector_config: [epic_craterlake]
     steps:
     - uses: actions/checkout@v4
-    - uses: actions/download-artifact@v4
+    - uses: actions/download-artifact@v5
       with:
         name: build-gcc-full-eic-shell
         path: install/
@@ -593,7 +593,7 @@ jobs:
           minq2: 1000
     steps:
     - uses: actions/checkout@v4
-    - uses: actions/download-artifact@v4
+    - uses: actions/download-artifact@v5
       with:
         name: build-gcc-full-eic-shell
         path: install/
@@ -673,7 +673,7 @@ jobs:
     - merge-dawn-view
     steps:
     - uses: actions/checkout@v4
-    - uses: actions/download-artifact@v4
+    - uses: actions/download-artifact@v5
       with:
         path: artifacts/
     - uses: actions/jekyll-build-pages@v1
